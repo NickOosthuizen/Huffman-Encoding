@@ -80,7 +80,7 @@ class Encoder():
             data_bytes.append((int(write_byte, 2).to_bytes(1, "big")))
         
         self.tree_string += "0"
-        wf.write(len(data_bytes).to_bytes(4, "big"))
+        # wf.write(len(data_bytes).to_bytes(4, "big"))
         wf.write(len(self.tree_string).to_bytes(4, "big"))
         wf.write(len(bytes_in_file).to_bytes(4, "big"))
         encoded_string = self.tree_string.encode()
@@ -98,9 +98,9 @@ class Encoder():
         self.encode_header_tree(root.right_child)
         if root.value is not None:
             self.tree_string += ("1" + root.value)
-            print(root.value)
         else:
             self.tree_string += "0"
+
 
 def main():
     enc = Encoder()
