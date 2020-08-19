@@ -1,4 +1,4 @@
-import sys
+import os
 import heapq
 import struct
 from node import Node
@@ -11,9 +11,9 @@ class Encoder():
 
     # the frequencies of each byte in file is needed
     # in order to construct a huffman encoding
-    def get_frequencies(self, file):
+    def get_frequencies(self, file_name):
         frequencies = {}
-        f = open(file, "rb")
+        f = open(file_name, "rb")
         bytes_in_file = f.read()
         for byte_to_process in bytes_in_file:
             if byte_to_process in frequencies:
@@ -23,7 +23,6 @@ class Encoder():
         f.close()
         return frequencies
     
-
     def generate_tree(self, frequencies):
         frequency_heap = []
         # take each byte from the file and construct it into a min heap 
@@ -58,7 +57,7 @@ class Encoder():
         self.find_byte_encoding(root.left_child, current_path + "0")
         self.find_byte_encoding(root.right_child, current_path + "1")
 
-    def write_compressed_file_data(self, file):
+    def write_compressed_file_data(self, file_name):
         if self.encodings == {}:
             print("No encodings to use for compression")
             return
@@ -66,7 +65,7 @@ class Encoder():
             print("Tree has not been stored")
             return
 
-        f = open(file, "rb")
+        f = open(file_name, "rb")
         bytes_in_file = f.read()
         data_bytes = []
         write_byte = ""
@@ -90,7 +89,11 @@ class Encoder():
         
         encoded_tree_bytes = self.header_tree_to_bytes(self.tree)
 
-        wf = open("output.data", "xb")
+        base_path, base_file_name = os.path.split(file_name)
+        base_file_name = "compressed_" + base_file_name
+        new_file_name = os.path.join(base_path, base_file_name)
+
+        wf = open(new_file_name, "xb")
         wf.write(len(encoded_tree_bytes).to_bytes(4, "big"))
         wf.write(len(bytes_in_file).to_bytes(4, "big"))
         for tree_byte in encoded_tree_bytes:
@@ -146,21 +149,11 @@ class Encoder():
                 bit_tree_encoding += "0"
             tree_bytes.append(int(bit_tree_encoding, 2).to_bytes(1, "big"))
         return tree_bytes
-
-
-        
-        
-
-
-def main():
-    enc = Encoder()
-    histogram = enc.get_frequencies(sys.argv[1])
-    tree = enc.generate_tree(histogram)
-    enc.find_byte_encoding(tree, "")
-    enc.encode_header_tree(tree)
-    enc.write_compressed_file_data(sys.argv[1])
-
     
+    def encode_and_write_file(self, file_name):
+        histogram = self.get_frequencies(file_name)
+        tree = self.generate_tree(histogram)
+        self.find_byte_encoding(tree, "")
+        self.encode_header_tree(tree)
+        self.write_compressed_file_data(file_name)
 
-if __name__ == "__main__":
-    main()

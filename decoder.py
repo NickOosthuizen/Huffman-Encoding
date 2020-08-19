@@ -1,16 +1,15 @@
-import sys
+import os
 from node import Node
 
 class Decoder():
-    def __init__(self, encoded_file):
-        self.encoded_file = encoded_file
+    def __init__(self):
         self.uncompressed_length = 0
         self.tree_info = ""
         self.compressed_data = ""
         self.root = None
     
-    def read_in_file_data(self):
-        f = open(self.encoded_file, "rb")
+    def read_in_file_data(self, file_name):
+        f = open(file_name, "rb")
         bytes_in_file = f.read()
         try:
             tree_byte_length = int.from_bytes(bytes_in_file[0:4], "big")
@@ -90,18 +89,24 @@ class Decoder():
                 counter += 1
         return decoded_bytes
     
-    def write_data(self, write_data):
-        wf = open("output.txt", "xb")
+    def write_data(self, write_data, file_name):
+        base_path, base_file_name = os.path.split(file_name)
+        if len(base_file_name) >= 10:
+            if base_file_name[0:11] == "compressed_":
+                base_file_name = "de" + base_file_name
+            else:
+                base_file_name = "decompressed_" + base_file_name
+        new_file_name = os.path.join(base_path, base_file_name)
+
+        wf = open(new_file_name, "xb")
         for write_byte in write_data:
             wf.write(write_byte)
         wf.close()
-
     
+    def decode_and_write_file(self, file_name):
+        self.read_in_file_data(file_name)
+        self.decode_tree_string()
+        self.construct_tree()
+        decoded_data = self.decode_data()
+        self.write_data(decoded_data, file_name)
 
-
-check = Decoder("output.data")
-check.read_in_file_data()
-check.decode_tree_string()
-check.construct_tree()
-decoded = check.decode_data()
-check.write_data(decoded)
