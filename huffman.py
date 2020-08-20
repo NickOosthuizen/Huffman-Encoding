@@ -24,7 +24,7 @@ def main():
     elif args.decode:
         decode_file(args.file_name)
     else:
-        print("Encode or decode argument required")
+        print("Encode or decode argument required, enter 'huffman.py -h' for options")
 
 if __name__ == '__main__':
     main()
